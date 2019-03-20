@@ -25,8 +25,7 @@ TIME, HALL, TABLE, NUMBER_OF_PEOPLE, NAME = range(5)
 def start(update, context):
 		update.message.reply_text(
 				'Вітаю!\n\n'
-				'Натисніть /cancel щоб завершити розмову.\n'
-				'Натисніть /start щоб почати спочатку.\n\n'
+				'Натисніть /cancel, щоб завершити розмову та /start, щоб почати спочатку.\n\n'
 				'Будь ласка, оберіть дату.',
 				reply_markup=telegramcalendar.create_calendar())
 
