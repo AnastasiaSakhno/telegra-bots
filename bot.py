@@ -18,8 +18,10 @@ logger = logging.getLogger(__name__)
 TOKEN = os.environ.get('TELEGRAM_API_TOKEN')
 PORT = int(os.environ.get('PORT', '8443'))
 
+TIME_REGEX_STR = '^([0-1][0-9]|[2][0-3])$'
+
 # states
-TIME, HALL, TABLE, NUMBER_OF_PEOPLE, NAME = range(5)
+HALL, TABLE, TIME_FROM, TIME_TO, NUMBER_OF_PEOPLE, NAME = range(6)
 
 
 def start(update, context):
@@ -40,32 +42,17 @@ def date_selected(update, context):
 			date_formatted = date.strftime("%d.%m.%Y")
 			logger.info("User %s %s selected date: %s", user.first_name, user.last_name, date_formatted)
 
+			logger.info("chat id=%s", update.callback_query.message.chat_id)
+
 			context.bot.send_message(
-				chat_id=update.callback_query.from_user.id,
+				chat_id=update.callback_query.message.chat_id,
 				text=date_formatted,
 				reply_markup=ReplyKeyboardRemove())
-
-		reply_keyboard = [['00', '01', '02', '03', '04', '05'], 
-						  ['06', '07', '08', '09', '10', '11'],
-						  ['12', '13', '14', '15', '16', '17'],
-						  ['18', '19', '20', '21', '22', '23']]
-
-		context.bot.send_message(
-			chat_id=update.callback_query.from_user.id,
-			text='Чудово. О котрій годині вас очікувати?',
-			reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
-
-		return TIME
-
-
-def time(update, context):
-		user = update.message.from_user
-		logger.info("Time of %s %s: %s", user.first_name, user.last_name, update.message.text)
 
 		reply_keyboard = [['Перший', 'Другий']]
 
 		context.bot.send_message(
-			chat_id=update.message.from_user.id,
+			chat_id=update.callback_query.message.chat_id,
 			text='Гаразд. Ви хочете замовити стіл у першому або другому залі?',
 			reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
 
@@ -97,6 +84,41 @@ def hall(update, context):
 def table(update, context):
 		user = update.message.from_user
 		logger.info("Table of %s %s: %s", user.first_name, user.last_name, update.message.text)
+
+		reply_keyboard = [['00', '01', '02', '03', '04', '05'], 
+						  ['06', '07', '08', '09', '10', '11'],
+						  ['12', '13', '14', '15', '16', '17'],
+						  ['18', '19', '20', '21', '22', '23']]
+
+		context.bot.send_message(
+			chat_id=update.message.chat_id,
+			text='Чудово. О котрій годині вас очікувати?',
+			reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
+
+		return TIME_FROM
+
+
+def time_from(update, context):
+		user = update.message.from_user
+		logger.info("%s %s plans be from: %s", user.first_name, user.last_name, update.message.text)
+
+		reply_keyboard = [['00', '01', '02', '03', '04', '05'], 
+						  ['06', '07', '08', '09', '10', '11'],
+						  ['12', '13', '14', '15', '16', '17'],
+						  ['18', '19', '20', '21', '22', '23']]
+
+		context.bot.send_message(
+			chat_id=update.message.chat_id,
+			text='До котрої години плануєте відпочинок у нас?',
+			reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
+
+		return TIME_TO
+
+
+def time_to(update, context):
+		user = update.message.from_user
+		logger.info("%s %s plans be until: %s", user.first_name, user.last_name, update.message.text)
+
 		update.message.reply_text('Дякую! Тепер вкажіть, будь ласка, скільки людей планують прийти до нас?')
 
 		return NUMBER_OF_PEOPLE
@@ -143,12 +165,14 @@ def main():
 		# Get the dispatcher to register handlers
 		dp = updater.dispatcher
 
-		# Add conversation handler with the states TIME, HALL, TABLE, NUMBER_OF_PEOPLE and NAME
+		# Add conversation handler with the states TIME_FROM, HALL, TABLE, NUMBER_OF_PEOPLE and NAME
 		conv_handler = ConversationHandler(
 				entry_points=[CommandHandler('start', start)],
 
 				states={
-						TIME: [RegexHandler('^([0-1][0-9]|[2][0-3])$', time)],
+						TIME_FROM: [RegexHandler(TIME_REGEX_STR, time_from)],
+
+						TIME_TO: [RegexHandler(TIME_REGEX_STR, time_to)],
 
 						HALL: [RegexHandler('^(Перший|Другий)$', hall)],
 
