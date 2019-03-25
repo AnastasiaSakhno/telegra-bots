@@ -25,189 +25,189 @@ HALL, TABLE, TIME_FROM, TIME_TO, NUMBER_OF_PEOPLE, NAME = range(6)
 
 
 def start(update, context):
-		update.message.reply_text(
-				'Вітаю!\n\n'
-				'Натисніть /cancel, щоб завершити розмову та /start, щоб почати спочатку.\n\n'
-				'Будь ласка, оберіть дату.',
-				reply_markup=telegramcalendar.create_calendar())
+	update.message.reply_text(
+			'Вітаю!\n\n'
+			'Натисніть /cancel, щоб завершити розмову та /start, щоб почати спочатку.\n\n'
+			'Будь ласка, оберіть дату.',
+			reply_markup=telegramcalendar.create_calendar())
 
-		return CallbackQueryHandler
+	return CallbackQueryHandler
 
 
 def date_selected(update, context):
-		selected, date = telegramcalendar.process_calendar_selection(context.bot, update)
+	selected, date = telegramcalendar.process_calendar_selection(context.bot, update)
 
-		if selected:
-			user = update.callback_query.from_user
-			date_formatted = date.strftime("%d.%m.%Y")
-			logger.info("User %s %s selected date: %s", user.first_name, user.last_name, date_formatted)
+	if selected:
+		user = update.callback_query.from_user
+		date_formatted = date.strftime("%d.%m.%Y")
+		logger.info("User %s %s selected date: %s", user.first_name, user.last_name, date_formatted)
 
-			logger.info("chat id=%s", update.callback_query.message.chat_id)
-
-			context.bot.send_message(
-				chat_id=update.callback_query.message.chat_id,
-				text=date_formatted,
-				reply_markup=ReplyKeyboardRemove())
-
-		reply_keyboard = [['Перший', 'Другий']]
+		logger.info("chat id=%s", update.callback_query.message.chat_id)
 
 		context.bot.send_message(
 			chat_id=update.callback_query.message.chat_id,
-			text='Гаразд. Ви хочете замовити стіл у першому або другому залі?',
-			reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
+			text=date_formatted,
+			reply_markup=ReplyKeyboardRemove())
 
-		return HALL
+	reply_keyboard = [['Перший', 'Другий']]
+
+	context.bot.send_message(
+		chat_id=update.callback_query.message.chat_id,
+		text='Гаразд. Ви хочете замовити стіл у першому або другому залі?',
+		reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
+
+	return HALL
 
 
 def hall(update, context):
-		user = update.message.from_user
-		logger.info("Hall of %s %s: %s", user.first_name, user.last_name, update.message.text)
+	user = update.message.from_user
+	logger.info("Hall of %s %s: %s", user.first_name, user.last_name, update.message.text)
 
-		picture = ('pub_hall1.jpg' if update.message.text == 'Перший' else 'pub_hall2.jpg')
+	picture = ('pub_hall1.jpg' if update.message.text == 'Перший' else 'pub_hall2.jpg')
 
-		if update.message.text == 'Перший':
-			reply_keyboard = [['1', '2', '3', '4', '5', '6', '7'], 
-								['8', '9', '10', '11', '12', '13']]
-		else:
-			reply_keyboard = [['1', '2', '3', '4', '5', '6', '7', '8'], 
-								['9', '10', '11', '12', '13', '14', '15', '16'], 
-								['17', '18', '19', '20', '21', '22', '23']]
+	if update.message.text == 'Перший':
+		reply_keyboard = [['1', '2', '3', '4', '5', '6', '7'], 
+		      						['8', '9', '10', '11', '12', '13']]
+	else:
+		reply_keyboard = [['1', '2', '3', '4', '5', '6', '7', '8'], 
+		      						['9', '10', '11', '12', '13', '14', '15', '16'], 
+					       			['17', '18', '19', '20', '21', '22', '23']]
 
-		context.bot.send_photo(update.message.chat_id, photo=open(picture, 'rb'))
+	context.bot.send_photo(update.message.chat_id, photo=open(picture, 'rb'))
 
-		update.message.reply_text('Добре! Який стіл?',
-															reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
+	update.message.reply_text('Добре! Який стіл?',
+														reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
 
-		return TABLE
+	return TABLE
 
 
 def table(update, context):
-		user = update.message.from_user
-		logger.info("Table of %s %s: %s", user.first_name, user.last_name, update.message.text)
+	user = update.message.from_user
+	logger.info("Table of %s %s: %s", user.first_name, user.last_name, update.message.text)
 
-		reply_keyboard = [['00', '01', '02', '03', '04', '05'], 
-						  ['06', '07', '08', '09', '10', '11'],
-						  ['12', '13', '14', '15', '16', '17'],
-						  ['18', '19', '20', '21', '22', '23']]
+	reply_keyboard = [['00', '01', '02', '03', '04', '05'], 
+					  ['06', '07', '08', '09', '10', '11'],
+					  ['12', '13', '14', '15', '16', '17'],
+					  ['18', '19', '20', '21', '22', '23']]
 
-		context.bot.send_message(
-			chat_id=update.message.chat_id,
-			text='Чудово. О котрій годині вас очікувати?',
-			reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
+	context.bot.send_message(
+		chat_id=update.message.chat_id,
+		text='Чудово. О котрій годині вас очікувати?',
+		reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
 
-		return TIME_FROM
+	return TIME_FROM
 
 
 def time_from(update, context):
-		user = update.message.from_user
-		logger.info("%s %s plans be from: %s", user.first_name, user.last_name, update.message.text)
+	user = update.message.from_user
+	logger.info("%s %s plans be from: %s", user.first_name, user.last_name, update.message.text)
 
-		reply_keyboard = [['00', '01', '02', '03', '04', '05'], 
-						  ['06', '07', '08', '09', '10', '11'],
-						  ['12', '13', '14', '15', '16', '17'],
-						  ['18', '19', '20', '21', '22', '23']]
+	reply_keyboard = [['00', '01', '02', '03', '04', '05'], 
+					  ['06', '07', '08', '09', '10', '11'],
+					  ['12', '13', '14', '15', '16', '17'],
+					  ['18', '19', '20', '21', '22', '23']]
 
-		context.bot.send_message(
-			chat_id=update.message.chat_id,
-			text='До котрої години плануєте відпочинок у нас?',
-			reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
+	context.bot.send_message(
+		chat_id=update.message.chat_id,
+		text='До котрої години плануєте відпочинок у нас?',
+		reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
 
-		return TIME_TO
+	return TIME_TO
 
 
 def time_to(update, context):
-		user = update.message.from_user
-		logger.info("%s %s plans be until: %s", user.first_name, user.last_name, update.message.text)
+	user = update.message.from_user
+	logger.info("%s %s plans be until: %s", user.first_name, user.last_name, update.message.text)
 
-		update.message.reply_text('Дякую! Тепер вкажіть, будь ласка, скільки людей планують прийти до нас?')
+	update.message.reply_text('Дякую! Тепер вкажіть, будь ласка, скільки людей планують прийти до нас?')
 
-		return NUMBER_OF_PEOPLE
+	return NUMBER_OF_PEOPLE
 
 
 def number_of_people(update, context):
-		user = update.message.from_user
-		logger.info("Number of people for %s %s: %s", user.first_name, user.last_name, update.message.text)
-		update.message.reply_text('Зрозуміло. '
+	user = update.message.from_user
+	logger.info("Number of people for %s %s: %s", user.first_name, user.last_name, update.message.text)
+	update.message.reply_text('Зрозуміло. '
 															'Як до вас можно звертатися?')
 
-		return NAME
+	return NAME
 
 
 def name(update, context):
-		user = update.message.from_user
-		logger.info("Name of %s %s: %s", user.first_name, user.last_name, update.message.text)
-		update.message.reply_text('Дуже дякую! Наш менеджер зателефонує вам. ')
+	user = update.message.from_user
+	logger.info("Name of %s %s: %s", user.first_name, user.last_name, update.message.text)
+	update.message.reply_text('Дуже дякую! Наш менеджер зателефонує вам. ')
 
-		return ConversationHandler.END
+	return ConversationHandler.END
 
 
 def cancel(update, context):
-		user = update.message.from_user
-		logger.info("User %s canceled the conversation.", user.first_name)
-		update.message.reply_text('Навседобре! Якщо ви хочете почати спочатку, натисніть /start.',
+	user = update.message.from_user
+	logger.info("User %s canceled the conversation.", user.first_name)
+	update.message.reply_text('Навседобре! Якщо ви хочете почати спочатку, натисніть /start.',
 															reply_markup=ReplyKeyboardRemove())
 
-		return ConversationHandler.END
+	return ConversationHandler.END
 
 
 def error(update, context):
-		"""Log Errors caused by Updates."""
-		logger.warning('Update "%s" caused error "%s"', update, context.error)
+	"""Log Errors caused by Updates."""
+	logger.warning('Update "%s" caused error "%s"', update, context.error)
 
 
 
 def main():
-		# Create the Updater and pass it your bot's token.
-		# Make sure to set use_context=True to use the new context based callbacks
-		# Post version 12 this will no longer be necessary
-		updater = Updater(token = TOKEN, use_context=True)
+	# Create the Updater and pass it your bot's token.
+	# Make sure to set use_context=True to use the new context based callbacks
+	# Post version 12 this will no longer be necessary
+	updater = Updater(token = TOKEN, use_context=True)
 
-		# Get the dispatcher to register handlers
-		dp = updater.dispatcher
+	# Get the dispatcher to register handlers
+	dp = updater.dispatcher
 
-		# Add conversation handler with the states TIME_FROM, HALL, TABLE, NUMBER_OF_PEOPLE and NAME
-		conv_handler = ConversationHandler(
-				entry_points=[CommandHandler('start', start)],
+	# Add conversation handler with the states TIME_FROM, HALL, TABLE, NUMBER_OF_PEOPLE and NAME
+	conv_handler = ConversationHandler(
+			entry_points=[CommandHandler('start', start)],
 
-				states={
-						TIME_FROM: [RegexHandler(TIME_REGEX_STR, time_from)],
+			states={
+					TIME_FROM: [RegexHandler(TIME_REGEX_STR, time_from)],
 
-						TIME_TO: [RegexHandler(TIME_REGEX_STR, time_to)],
+					TIME_TO: [RegexHandler(TIME_REGEX_STR, time_to)],
 
-						HALL: [RegexHandler('^(Перший|Другий)$', hall)],
+					HALL: [RegexHandler('^(Перший|Другий)$', hall)],
 
-						TABLE: [MessageHandler(Filters.text, table)],
+					TABLE: [MessageHandler(Filters.text, table)],
 
-						NUMBER_OF_PEOPLE: [MessageHandler(Filters.text, number_of_people)],
+					NUMBER_OF_PEOPLE: [MessageHandler(Filters.text, number_of_people)],
 
-						NAME: [MessageHandler(Filters.text, name)]
-				},
+					NAME: [MessageHandler(Filters.text, name)]
+			},
 
-				fallbacks=[
-					CommandHandler('cancel', cancel),
-					CallbackQueryHandler(date_selected)
-				]
-		)
+			fallbacks=[
+				CommandHandler('cancel', cancel),
+				CallbackQueryHandler(date_selected)
+			]
+	)
 
-		dp.add_handler(conv_handler)
+	dp.add_handler(conv_handler)
 
-		# log all errors
-		dp.add_error_handler(error)
+	# log all errors
+	dp.add_error_handler(error)
 
-		# Start the Bot
-		updater.bot.set_webhook()
-		if "HEROKU" in list(os.environ.keys()):
-			updater.start_webhook(listen="0.0.0.0",
-			                      port=PORT,
-			                      url_path=TOKEN)
-			updater.bot.set_webhook("https://telegra-bots.herokuapp.com/" + TOKEN)
-		else:
-			updater.start_polling()
+	# Start the Bot
+	updater.bot.set_webhook()
+	if "HEROKU" in list(os.environ.keys()):
+		updater.start_webhook(listen="0.0.0.0",
+		                      port=PORT,
+		                      url_path=TOKEN)
+		updater.bot.set_webhook("https://telegra-bots.herokuapp.com/" + TOKEN)
+	else:
+		updater.start_polling()
 
-		# Run the bot until you press Ctrl-C or the process receives SIGINT,
-		# SIGTERM or SIGABRT. This should be used most of the time, since
-		# start_polling() is non-blocking and will stop the bot gracefully.
-		updater.idle()
+	# Run the bot until you press Ctrl-C or the process receives SIGINT,
+	# SIGTERM or SIGABRT. This should be used most of the time, since
+	# start_polling() is non-blocking and will stop the bot gracefully.
+	updater.idle()
 
 
 if __name__ == '__main__':
