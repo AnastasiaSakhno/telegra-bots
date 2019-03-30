@@ -27,9 +27,9 @@ HALL, TABLE, HOUR_FROM, HOUR_TO, NUMBER_OF_PEOPLE, NAME, PHONE_NUMBER=range(7)
 
 def start(update, context):
   update.message.reply_text(
-      'Вітаю!\n\n'
+      'Бот з бронювання столів у Махнопабі вітає вас!\n\n'
       'Натисніть /cancel, щоб завершити розмову та /start, щоб почати спочатку.\n\n'
-      'Оберіть дату.',
+      'Оберіть дату, на коли ви бажаєте замовити стіл.',
       reply_markup=telegramcalendar.create_calendar())
 
   return CallbackQueryHandler
@@ -66,12 +66,12 @@ def date_selected(update, context):
   return HOUR_FROM
 
 
-def hour_from(update, context):
+def time_from(update, context):
   user=update.message.from_user
-  hour_from=update.message.text
-  logger.info("%s %s plans be from: %s", user.first_name, user.last_name, hour_from)
+  time_from=update.message.text
+  logger.info("%s %s plans be from: %s", user.first_name, user.last_name, time_from)
 
-  pub_api.put_table_reservation(update.message.chat_id, 'hour_from', hour_from)
+  pub_api.put_table_reservation(update.message.chat_id, 'time_from', time_from)
 
   reply_keyboard=[['00', '01', '02', '03', '04', '05'], 
                     ['06', '07', '08', '09', '10', '11'],
@@ -86,14 +86,14 @@ def hour_from(update, context):
   return HOUR_TO
 
 
-def hour_to(update, context):
+def time_to(update, context):
   user=update.message.from_user
-  hour_to=update.message.text
-  logger.info("%s %s plans be until: %s", user.first_name, user.last_name, hour_to)
+  time_to=update.message.text
+  logger.info("%s %s plans be until: %s", user.first_name, user.last_name, time_to)
 
-  pub_api.put_table_reservation(update.message.chat_id, 'hour_to', hour_to)
+  pub_api.put_table_reservation(update.message.chat_id, 'time_to', time_to)
 
-  reply_keyboard=[['Перший', 'Другий']]
+  reply_keyboard=[['Паб', 'Підпілля (концертний)']]
 
   context.bot.send_message(
     chat_id=update.message.chat_id,
@@ -105,7 +105,7 @@ def hour_to(update, context):
 
 def hall(update, context):
   user=update.message.from_user
-  hall=(1 if update.message.text == 'Перший' else 2)
+  hall=(1 if update.message.text == 'Паб' else 2)
   logger.info("Hall of %s %s: %s", user.first_name, user.last_name, hall)
 
   chat_id=update.message.chat_id
