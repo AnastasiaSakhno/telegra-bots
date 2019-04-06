@@ -178,8 +178,14 @@ def name(update, context):
   chat_id=update.message.chat_id
   pub_api.put_table_reservation(chat_id, 'user_name', f'{name} ({user.first_name} {user.last_name})')
 
+  item=pub_api.get_latest_table_reservation(chat_id)
+
+  time_lasts_up=datetime.strptime(item["time_lasts_up"], '%Y-%m-%dT%H:%M:%S+02:00').strftime('%H:%M')
+
   update.message.reply_text(
-    'Дуже дякую. Наш менеджер зателефонує вам.\n\n'
+    'Дуже дякую.\n\n'
+    f'Якщо ви не зможете прийти, будь ласка, попередьте нас. Бронь триматиметься до {time_lasts_up}\n\n'
+    'Наш менеджер зателефонує вам.\n\n'
     'Якщо ви хочете зарезервувати ще один стіл, натисніть /start.\n\n'
     'Навседобре!')
 
