@@ -6,6 +6,7 @@ import os
 import telegramcalendar
 import pub_api
 
+from datetime import datetime
 from telegram import (ReplyKeyboardMarkup, ReplyKeyboardRemove, KeyboardButton)
 from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters, RegexHandler, CallbackQueryHandler,
                           ConversationHandler)
@@ -19,11 +20,13 @@ logger=logging.getLogger(__name__)
 TOKEN=os.environ.get('TELEGRAM_API_TOKEN')
 PORT=int(os.environ.get('PORT', '8443'))
 
-TIME_REGEX_STR='^([0-1][0-9]|[2][0-3])$'
+TIME_REGEX_STR='^(0[0-9]|1[0-9]|2[0-3]|[0-9]):[0-5][0-9]$'
+TIMES_LINE_BUTTONS_COUNT = 6
 
 # states
 HALL, TABLE, HOUR_FROM, HOUR_TO, NUMBER_OF_PEOPLE, NAME, PHONE_NUMBER=range(7)
 
+chunks=lambda l, n: [l[x: x+n] for x in range(0, len(l), n)]
 
 def start(update, context):
   update.message.reply_text(
@@ -53,10 +56,9 @@ def date_selected(update, context):
       reply_markup=ReplyKeyboardRemove()
     )
 
-    reply_keyboard=[['00', '01', '02', '03', '04', '05'],
-                      ['06', '07', '08', '09', '10', '11'],
-                      ['12', '13', '14', '15', '16', '17'],
-                      ['18', '19', '20', '21', '22', '23']]
+    times=pub_api.get_available_from_times()
+
+    reply_keyboard=chunks(times, TIMES_LINE_BUTTONS_COUNT)
 
   context.bot.send_message(
     chat_id=update.callback_query.message.chat_id,
@@ -71,12 +73,12 @@ def time_from(update, context):
   time_from=update.message.text
   logger.info("%s %s plans be from: %s", user.first_name, user.last_name, time_from)
 
-  pub_api.put_table_reservation(update.message.chat_id, 'time_from', time_from)
+  chat_id = update.message.chat_id
+  pub_api.put_table_reservation(chat_id, 'time_from', time_from)
 
-  reply_keyboard=[['00', '01', '02', '03', '04', '05'], 
-                    ['06', '07', '08', '09', '10', '11'],
-                    ['12', '13', '14', '15', '16', '17'],
-                    ['18', '19', '20', '21', '22', '23']]
+  times=pub_api.get_available_to_times(chat_id)
+
+  reply_keyboard=chunks(times, TIMES_LINE_BUTTONS_COUNT)
 
   context.bot.send_message(
     chat_id=update.message.chat_id,
@@ -114,9 +116,8 @@ def hall(update, context):
   picture=('pub_hall1.jpg' if hall == 1 else 'pub_hall2.jpg')
 
   tables=pub_api.get_available_tables(chat_id)
-  tables=[str(x) for x in tables]
+  # tables=[str(x) for x in tables]
 
-  chunks=lambda l, n: [l[x: x+n] for x in range(0, len(l), n)]
   reply_keyboard=chunks(tables, 5)
 
   context.bot.send_photo(update.message.chat_id, photo=open(picture, 'rb'))
@@ -214,11 +215,11 @@ def main():
     entry_points=[CommandHandler('start', start)],
 
     states={
-      HOUR_FROM: [RegexHandler(TIME_REGEX_STR, hour_from)],
+      HOUR_FROM: [RegexHandler(TIME_REGEX_STR, time_from)],
 
-      HOUR_TO: [RegexHandler(TIME_REGEX_STR, hour_to)],
+      HOUR_TO: [RegexHandler(TIME_REGEX_STR, time_to)],
 
-      HALL: [RegexHandler('^(Перший|Другий)$', hall)],
+      HALL: [RegexHandler('^(Паб|Підпілля \(концертний\))$', hall)],
 
       TABLE: [MessageHandler(Filters.text, table)],
 

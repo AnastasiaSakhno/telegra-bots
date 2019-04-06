@@ -11,6 +11,8 @@ LOGIN_URL = f'{BASE_API_URL}/login'
 TABLE_RESERVATIONS_URL = f'{BASE_API_URL}/table_reservations'
 LATEST_TABLE_RESERVATION_URL = f'{BASE_API_URL}/table_reservations/latest'
 AVAILABLE_TABLES_URL = f'{BASE_API_URL}/table_reservations/available_tables'
+AVAILABLE_FROM_TIMES_URL = f'{BASE_API_URL}/table_reservations/available_from_times'
+AVAILABLE_TO_TIMES_URL = f'{BASE_API_URL}/table_reservations/available_to_times'
 
 def auth_token():
 	payload = {
@@ -80,5 +82,25 @@ def get_available_tables(chat_id):
   } 
 
   response = requests.get(f'{AVAILABLE_TABLES_URL}?chat_id={chat_id}', headers = headers)
+
+  return response.json()
+
+
+def get_available_from_times():
+  headers = {
+    'Authorization': auth_token()
+  } 
+
+  response = requests.get(AVAILABLE_FROM_TIMES_URL, headers = headers)
+
+  return response.json()
+
+
+def get_available_to_times(chat_id):
+  headers = {
+    'Authorization': auth_token()
+  } 
+
+  response = requests.get(f'{AVAILABLE_TO_TIMES_URL}?chat_id={chat_id}', headers = headers)
 
   return response.json()
