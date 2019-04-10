@@ -24,7 +24,7 @@ TIME_REGEX_STR='^(0[0-9]|1[0-9]|2[0-3]|[0-9]):[0-5][0-9]$'
 TIMES_LINE_BUTTONS_COUNT = 6
 
 # states
-HALL, TABLE, HOUR_FROM, HOUR_TO, NUMBER_OF_PEOPLE, NAME, PHONE_NUMBER=range(7)
+HALL, TABLE, TIME_FROM, TIME_TO, NUMBER_OF_PEOPLE, NAME, PHONE_NUMBER=range(7)
 
 chunks=lambda l, n: [l[x: x+n] for x in range(0, len(l), n)]
 
@@ -60,12 +60,12 @@ def date_selected(update, context):
 
     reply_keyboard=chunks(times, TIMES_LINE_BUTTONS_COUNT)
 
-  context.bot.send_message(
-    chat_id=update.callback_query.message.chat_id,
-    text='Чудово. О котрій годині вас очікувати?',
-    reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
+    context.bot.send_message(
+      chat_id=update.callback_query.message.chat_id,
+      text='Чудово. О котрій годині вас очікувати?',
+      reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
 
-  return HOUR_FROM
+  return TIME_FROM
 
 
 def time_from(update, context):
@@ -82,10 +82,10 @@ def time_from(update, context):
 
   context.bot.send_message(
     chat_id=update.message.chat_id,
-    text='До котрої години плануєте відпочинок у нас?',
+    text='Вкажіть, будь ласка, до котрої години плануєте відпочинок у нас або натисніть /skip, щоб пропустити цей крок.',
     reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
 
-  return HOUR_TO
+  return TIME_TO
 
 
 def time_to(update, context):
@@ -93,12 +93,29 @@ def time_to(update, context):
   time_to=update.message.text
   logger.info("%s %s plans be until: %s", user.first_name, user.last_name, time_to)
 
-  pub_api.put_table_reservation(update.message.chat_id, 'time_to', time_to)
+  chat_id=update.message.chat_id
+  pub_api.put_table_reservation(chat_id, 'time_to', time_to)
 
   reply_keyboard=[['Паб', 'Підпілля (концертний)']]
 
   context.bot.send_message(
-    chat_id=update.message.chat_id,
+    chat_id=chat_id,
+    text='Гаразд. Ви хочете замовити стіл у першому або другому залі?',
+    reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
+
+  return HALL
+
+
+def skip_time_to(update, context):
+  user = update.message.from_user
+  logger.info("User %s %s did not send time to.", user.first_name, user.last_name)
+
+  chat_id=update.message.chat_id
+  pub_api.put_table_reservation(chat_id, 'time_to', '24:00')
+
+  reply_keyboard=[['Паб', 'Підпілля (концертний)']]
+  context.bot.send_message(
+    chat_id=chat_id,
     text='Гаразд. Ви хочете замовити стіл у першому або другому залі?',
     reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
 
@@ -221,14 +238,15 @@ def main():
   # Get the dispatcher to register handlers
   dp=updater.dispatcher
 
-  # Add conversation handler with the states HOUR_FROM, HALL, TABLE, NUMBER_OF_PEOPLE and NAME
+  # Add conversation handler with the states TIME_FROM, HALL, TABLE, NUMBER_OF_PEOPLE and NAME
   conv_handler=ConversationHandler(
     entry_points=[CommandHandler('start', start)],
 
     states={
-      HOUR_FROM: [RegexHandler(TIME_REGEX_STR, time_from)],
+      TIME_FROM: [RegexHandler(TIME_REGEX_STR, time_from)],
 
-      HOUR_TO: [RegexHandler(TIME_REGEX_STR, time_to)],
+      TIME_TO: [RegexHandler(TIME_REGEX_STR, time_to),
+                CommandHandler('skip', skip_time_to)],
 
       HALL: [RegexHandler('^(Паб|Підпілля \(концертний\))$', hall)],
 
