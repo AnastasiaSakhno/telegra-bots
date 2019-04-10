@@ -179,6 +179,7 @@ def name(update, context):
   pub_api.put_table_reservation(chat_id, 'user_name', f'{name} ({user.first_name} {user.last_name})')
 
   item=pub_api.get_latest_table_reservation(chat_id)
+  pub_api.put_table_reservation(chat_id, 'status', 'filled')
 
   time_lasts_up=datetime.strptime(item["time_lasts_up"], '%Y-%m-%dT%H:%M:%S+02:00').strftime('%H:%M')
 
@@ -195,6 +196,10 @@ def name(update, context):
 def cancel(update, context):
   user=update.message.from_user
   logger.info("User %s canceled the conversation.", user.first_name)
+
+  chat_id=update.message.chat_id
+  pub_api.put_table_reservation(chat_id, 'status', 'canceled')
+
   update.message.reply_text('Навседобре! Якщо ви хочете почати спочатку, натисніть /start.',
                               reply_markup=ReplyKeyboardRemove())
 
