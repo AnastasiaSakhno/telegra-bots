@@ -8,9 +8,24 @@ Base methods for calendar keyboard creation and processing.
 """
 
 
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup,ReplyKeyboardRemove
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardRemove
 import datetime
 import calendar
+
+MONTH_MAP = {
+    "January": "Січень",
+    "February": "Лютий",
+    "March": "Березень",
+    "April": "Квітень",
+    "May": "Травень",
+    "June": "Червень",
+    "July": "Липень",
+    "August": "Серпень",
+    "September": "Вересень",
+    "October": "Жовтень",
+    "November": "Листопад",
+    "December": "Грудень"
+}
 
 def create_callback_data(action,year,month,day):
     """ Create the callback data associated to each button"""
@@ -35,11 +50,12 @@ def create_calendar(year=None,month=None):
     keyboard = []
     #First row - Month and Year
     row=[]
-    row.append(InlineKeyboardButton(calendar.month_name[month]+" "+str(year),callback_data=data_ignore))
+    month_name = MONTH_MAP[calendar.month_name[month]]
+    row.append(InlineKeyboardButton(month_name+" "+str(year),callback_data=data_ignore))
     keyboard.append(row)
     #Second row - Week Days
     row=[]
-    for day in ["Mo","Tu","We","Th","Fr","Sa","Su"]:
+    for day in ["Пн","Вт","Ср","Чт","Пт","Сб","Нд"]:
         row.append(InlineKeyboardButton(day,callback_data=data_ignore))
     keyboard.append(row)
 
