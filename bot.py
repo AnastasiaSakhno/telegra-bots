@@ -215,7 +215,7 @@ def cancel(update, context):
   logger.info("User %s canceled the conversation.", user.first_name)
 
   chat_id=update.message.chat_id
-  pub_api.put_table_reservation(chat_id, 'status', 'canceled')
+  pub_api.put_table_reservation(chat_id, 'status', 'cancelled')
 
   update.message.reply_text('Навседобре! Якщо ви хочете почати спочатку, натисніть /start.',
                               reply_markup=ReplyKeyboardRemove())
