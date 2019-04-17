@@ -60,7 +60,7 @@ def date_selected(update, context):
 
     context.bot.send_message(
       chat_id=update.callback_query.message.chat_id,
-      text='Чудово. Ви хочете замовити стіл у першому або другому залі?',
+      text='Чудово. В якому залі ви хочете замовити стіл?',
       reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
 
   return HALL
