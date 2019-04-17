@@ -61,12 +61,12 @@ def get_blackout_dates(date, hall):
   return response.json()
 
 
-def get_black_list(phone_number):
+def get_black_list(user_phone):
   headers = {
     'Authorization': auth_token()
   } 
 
-  response = requests.get(f'{BLACK_LIST_URL}?phone_number={phone_number}', headers = headers)
+  response = requests.get(f'{BLACK_LIST_URL}?user_phone={user_phone}', headers = headers)
 
   return response.json()
 
