@@ -77,6 +77,9 @@ def hall(update, context):
   blackout_dates = pub_api.get_blackout_dates(item["date"], hall)
 
   if(len(blackout_dates) > 0):
+    logger.info("%s %s not available date: %s for hall %s", user.first_name, user.last_name, item["date"], hall)
+    pub_api.delete_table_reservation(chat_id)
+
     date=datetime.strptime(item["date"], '%Y-%m-%d').strftime('%d.%m.%Y')
     update.message.reply_text(
       f'Вибачте, на {date} зала "{hall_text}" недоступна для бронювання.\n\n'
@@ -188,11 +191,24 @@ def phone_number(update, context):
   phone_number=update.message.contact.phone_number
   logger.info("Phone number of %s %s: %s", user.first_name, user.last_name, phone_number)
 
-  pub_api.put_table_reservation(update.message.chat_id, 'user_phone', phone_number)
+  chat_id = update.message.chat_id
+  pub_api.put_table_reservation(chat_id, 'user_phone', phone_number)
 
-  update.message.reply_text('Дякую. Як до вас можно звертатися?')
+  not_come_list = pub_api.get_black_list(phone_number)
 
-  return NAME
+  if(len(not_come_list) > 0):
+    logger.info("%s %s, %s in black list", user.first_name, user.last_name, phone_number)
+    pub_api.delete_table_reservation(chat_id)
+
+    update.message.reply_text(
+      f'Вибачте, на {phone_number} неможливо забронювати стіл через те, що ви не прийшли минулого разу.',
+      reply_markup=ReplyKeyboardRemove())
+
+    return ConversationHandler.END
+  else:
+    update.message.reply_text('Дякую. Як до вас можно звертатися?')
+
+    return NAME
 
 
 def name(update, context):
