@@ -68,20 +68,33 @@ def date_selected(update, context):
 
 def hall(update, context):
   user=update.message.from_user
-  hall=(1 if update.message.text == 'Паб' else 2)
+  hall_text = update.message.text
+  hall=(1 if hall_text == 'Паб' else 2)
   logger.info("Hall of %s %s: %s", user.first_name, user.last_name, hall)
 
   chat_id=update.message.chat_id
-  pub_api.put_table_reservation(chat_id, 'hall', hall)
+  item=pub_api.get_latest_table_reservation(chat_id)
+  blackout_dates = pub_api.get_blackout_dates(item["date"], hall)
 
-  times=pub_api.get_available_from_times()
+  if(len(blackout_dates) > 0):
+    date=datetime.strptime(item["date"], '%Y-%m-%d').strftime('%d.%m.%Y')
+    update.message.reply_text(
+      f'Вибачте, на {date} зала "{hall_text}" недоступна для бронювання.\n\n'
+      'Якщо ви хочете виконати інше бронювання, натисніть /start.',
+      reply_markup=ReplyKeyboardRemove())
 
-  reply_keyboard=chunks(times, TIMES_LINE_BUTTONS_COUNT)
+    return ConversationHandler.END
+  else:
+    pub_api.put_table_reservation(chat_id, 'hall', hall)
 
-  update.message.reply_text('Добре! О котрій годині вас очікувати?',
-                            reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
+    times=pub_api.get_available_from_times()
 
-  return TIME_FROM
+    reply_keyboard=chunks(times, TIMES_LINE_BUTTONS_COUNT)
+
+    update.message.reply_text('Добре! О котрій годині вас очікувати?',
+                              reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
+
+    return TIME_FROM
 
 
 def time_from(update, context):

@@ -9,6 +9,7 @@ BASE_PUB_URL = os.environ.get('PUB_BASE_URL')
 BASE_API_URL = f'{BASE_PUB_URL}/api'
 LOGIN_URL = f'{BASE_API_URL}/login'
 TABLE_RESERVATIONS_URL = f'{BASE_API_URL}/table_reservations'
+BLACKOUT_DATES_URL = f'{BASE_API_URL}/table_reservation_blackout_dates'
 LATEST_TABLE_RESERVATION_URL = f'{BASE_API_URL}/table_reservations/latest'
 AVAILABLE_TABLES_URL = f'{BASE_API_URL}/table_reservations/available_tables'
 AVAILABLE_FROM_TIMES_URL = f'{BASE_API_URL}/table_reservations/available_from_times'
@@ -45,6 +46,16 @@ def post_table_reservation(chat_id, date):
   } 
 
   response = requests.post(TABLE_RESERVATIONS_URL, data = json.dumps(payload), headers = headers)
+
+  return response.json()
+
+
+def get_blackout_dates(date, hall):
+  headers = {
+    'Authorization': auth_token()
+  } 
+
+  response = requests.get(f'{BLACKOUT_DATES_URL}?date={date}&hall={hall}', headers = headers)
 
   return response.json()
 
