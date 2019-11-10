@@ -144,13 +144,18 @@ def table_query(update, context, time_to):
   reply_keyboard=chunks(tables, 5)
 
   item=pub_api.get_latest_table_reservation(chat_id)
-  picture=('pub_hall1.jpg' if item["hall"] == 1 else 'pub_hall2.jpg')
+  hall=item["hall"]
+  picture=('pub_hall1.jpg' if hall == 1 else 'pub_hall2.jpg')
+
+  text='Гаразд. Який з доступних столів ви бажаєте зайняти?'
+  if hall == 2:
+    text+='\n\n* Бронювати стіл можливо при наявності квитка, придбаного за відповідним столом.'
 
   context.bot.send_photo(update.message.chat_id, photo=open(picture, 'rb'))
 
   context.bot.send_message(
     chat_id=chat_id,
-    text='Гаразд. Який з доступних столів ви бажаєте зайняти?',
+    text=text,
     reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
 
   return TABLE
