@@ -149,8 +149,8 @@ def table_query(update, context, time_to):
 
   text='Гаразд. Який з доступних столів ви бажаєте зайняти?'
   if hall == 2:
-    text+='\n\n* Бронювати стіл можливо при наявності квитка, придбаного за відповідним столом.'
-    '\nТелефони: +380987797517, +380737797517'
+    text+=('\n\n* Бронювати стіл можливо при наявності квитка, придбаного за відповідним столом.'
+    '\nТелефони: +380987797517, +380737797517')
 
   context.bot.send_photo(update.message.chat_id, photo=open(picture, 'rb'))
 
@@ -236,6 +236,18 @@ def name(update, context):
     'Наш менеджер зателефонує вам.\n\n'
     'Якщо ви хочете зарезервувати ще один стіл, натисніть /start.\n\n'
     'Навседобре!')
+
+  pub_callback_text=(f'Бронь на дату: {item["date"]} з {item["time_from"]} по {item["time_to"]}'
+  f'\nЗала: {item["hall"]}, стіл: {item["table"]}'
+  f'\nНомер телефону: {item["user_phone"]}'
+  f'\nІм\'я: {item["user_name"]}'
+  f'\nКількість людей: {item["people_number"]}')
+
+  context.bot.send_message(
+    chat_id=821204274, 
+    text=pub_callback_text, 
+    reply_markup=ReplyKeyboardRemove()
+  )
 
   return ConversationHandler.END
 
