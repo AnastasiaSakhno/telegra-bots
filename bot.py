@@ -150,6 +150,7 @@ def table_query(update, context, time_to):
   text='Гаразд. Який з доступних столів ви бажаєте зайняти?'
   if hall == 2:
     text+='\n\n* Бронювати стіл можливо при наявності квитка, придбаного за відповідним столом.'
+    '\nТелефони: +380987797517, +380737797517'
 
   context.bot.send_photo(update.message.chat_id, photo=open(picture, 'rb'))
 
