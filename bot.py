@@ -51,8 +51,8 @@ def date_selected(update, context):
     logger.info("item=%s", item)
 
     context.bot.send_message(
-      chat_id=update.callback_query.message.chat_id, 
-      text=date_formatted, 
+      chat_id=update.callback_query.message.chat_id,
+      text=date_formatted,
       reply_markup=ReplyKeyboardRemove()
     )
 
@@ -237,15 +237,19 @@ def name(update, context):
     'Якщо ви хочете зарезервувати ще один стіл, натисніть /start.\n\n'
     'Навседобре!')
 
-  pub_callback_text=(f'Бронь на дату: {item["date"]} з {item["time_from"]} по {item["time_to"]}'
+  date=datetime.strptime(item["date"], '%Y-%m-%d').strftime('%d.%m.%Y')
+  from_time=datetime.strptime(item["time_from"], '%Y-%m-%dT%H:%M:%S+02:00').strftime('%H:%M')
+  to_time=datetime.strptime(item["time_to"], '%Y-%m-%dT%H:%M:%S+02:00').strftime('%H:%M')
+
+  pub_callback_text=(f'Бронь на дату: {date} з {from_time} по {to_time}'
   f'\nЗала: {item["hall"]}, стіл: {item["table"]}'
   f'\nНомер телефону: {item["user_phone"]}'
   f'\nІм\'я: {item["user_name"]}'
   f'\nКількість людей: {item["people_number"]}')
 
   context.bot.send_message(
-    chat_id=821204274, 
-    text=pub_callback_text, 
+    chat_id=821204274,
+    text=pub_callback_text,
     reply_markup=ReplyKeyboardRemove()
   )
 
@@ -295,7 +299,7 @@ def main():
       TABLE: [MessageHandler(Filters.text, table)],
 
       NUMBER_OF_PEOPLE: [MessageHandler(Filters.text, number_of_people)],
-      
+
       PHONE_NUMBER: [MessageHandler(Filters.contact, phone_number)],
 
       NAME: [MessageHandler(Filters.text, name)]
